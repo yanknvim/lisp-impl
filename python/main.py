@@ -13,8 +13,8 @@ def parse(tokens):
         l = []
         while tokens[0] != ")":
             l.append(parse(tokens))
+        tokens.pop(0)
         return l
-
     else:
         return atom(token)
 
@@ -30,13 +30,24 @@ def eval(s):
     elif s[0] == "/":
         return eval(s[1]) / eval(s[2])
     elif s[0] == "quote":
-        return s
-    elif s[0] == "eq":
+        return s[1]
+    elif s[0] == "atom":
+        return isinstance(eval(s[1]), int)
+    elif s[0] == "eq?":
         return eval(s[1]) == eval(s[2])
     elif s[0] == "car":
-        return s[1][0]
+        return eval(s[1])[0]
     elif s[0] == "cdr":
-        return s[1][1:]
+        return eval(s[1])[1:]
+    elif s[0] == "cons":
+        return [eval(s[1]), eval(s[2])]
+    elif s[0] == "if":
+        if eval(s[1]) == True:
+            return eval(s[2])
+        else:
+            return eval(s[3])
+    elif s[0] == "print":
+        print(eval(s[1]))
 
 program = input()
-print(eval(parse(tokenize(program))))
+eval(parse(tokenize(program)))
