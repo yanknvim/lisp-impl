@@ -18,36 +18,53 @@ def parse(tokens):
     else:
         return atom(token)
 
-def eval(s):
+env = dict() 
+def eval(s, env=env):
     if isinstance(s, int):
         return s
+    elif isinstance(s, str):
+        return env[s]
     elif s[0] == "+":
-        return eval(s[1]) + eval(s[2])
+        return eval(s[1], env) + eval(s[2], env)
     elif s[0] == "-":
-        return eval(s[1]) - eval(s[2])
+        return eval(s[1], env) - eval(s[2], env)
     elif s[0] == "*":
-        return eval(s[1]) * eval(s[2])
+        return eval(s[1], env) * eval(s[2], env)
     elif s[0] == "/":
-        return eval(s[1]) / eval(s[2])
+        return eval(s[1], env) / eval(s[2], env)
     elif s[0] == "quote":
         return s[1]
     elif s[0] == "atom":
-        return isinstance(eval(s[1]), int)
+        return isinstance(eval(s[1], env), int)
     elif s[0] == "eq?":
-        return eval(s[1]) == eval(s[2])
+        return eval(s[1], env) == eval(s[2], env)
     elif s[0] == "car":
-        return eval(s[1])[0]
+        return eval(s[1], env)[0]
     elif s[0] == "cdr":
-        return eval(s[1])[1:]
+        return eval(s[1], env)[1:]
     elif s[0] == "cons":
-        return [eval(s[1]), eval(s[2])]
+        return [eval(s[1], env), eval(s[2], env)]
     elif s[0] == "if":
-        if eval(s[1]) == True:
-            return eval(s[2])
+        if eval(s[1], env) == True:
+            return eval(s[2], env)
         else:
-            return eval(s[3])
+            return eval(s[3], env)
+    elif s[0] == "begin":
+        val = 0
+        for exp in s[1:]:
+            val = eval(exp, env)
+        return val
+    elif s[0] == "define":
+        env[s[1]] = s[2]
+    elif s[0][0] == "lambda":
+        penv = dict()
+        penv[s[0][1]] = s[1]
+        return eval(s[0][2], penv)
     elif s[0] == "print":
-        print(eval(s[1]))
+        print(eval(s[1], env))
+    else:
+        eval(s[0], env)
 
 program = input()
-eval(parse(tokenize(program)))
+print(parse(tokenize(program)))
+eval(parse(tokenize(program)), env)
